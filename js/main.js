@@ -23,7 +23,8 @@
 
   /* ── sprite sheet animator (Arks / Dino Family, 24×24 frames) ── */
   const ANIMS = {
-    hatch: { start: 0,  frames: 7, fps: 8, sheet: "assets/hatch.png" },
+    crack: { start: 0,  frames: 4, fps: 6, sheet: "assets/crack.png" },
+    hatch: { start: 0,  frames: 8, fps: 8, sheet: "assets/hatch.png" },
     idle:  { start: 0,  frames: 4, fps: 7 },
     walk:  { start: 4,  frames: 6, fps: 10 },
     kick:  { start: 10, frames: 3, fps: 8 },
@@ -127,14 +128,18 @@
 
   const choreo = {
     hero(p) {
-      /* Start with hatching animation, then transition to idle/walk */
-      dino.x = lerp(68, 112, ramp(p, 0.18, 1));
+      /* Sequence: crack egg -> hatch dino -> transition to journey */
+      dino.x = lerp(68, 112, ramp(p, 0.22, 1));
       dino.scale = 4; dino.op = 1;
-      if (p < 0.12) {
+      
+      if (p < 0.08) {
+        dino.anim = "crack";
+        dino.x = 68;
+      } else if (p < 0.18) {
         dino.anim = "hatch";
-        dino.x = 68; // Stay still while hatching
+        dino.x = 68;
       } else {
-        dino.anim = p < 0.2 ? "idle" : "walk";
+        dino.anim = p < 0.25 ? "idle" : "walk";
       }
     },
     prompt(p) {
