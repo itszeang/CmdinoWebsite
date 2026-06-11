@@ -114,19 +114,27 @@
       dino.anim = p < 0.1 ? "idle" : "walk";
     },
     prompt(p) {
-      dino.x = path(p, [[0, -8], [0.5, 50], [0.82, 50], [1, 50]]);
-      dino.scale = lerp(3.6, 1.9, ramp(p, 0.5, 0.85));
-      dino.op = 1 - ramp(p, 0.82, 0.96);
-      dino.anim = p < 0.52 ? "run" : p < 0.82 ? "idle" : "walk";
+      /* Enter scene, look at terminal portal, then walk off */
+      dino.x = path(p, [[0, -8], [0.42, 50], [0.8, 50], [1, 112]]);
+      dino.scale = lerp(4, 2.8, ramp(p, 0, 0.42));
+      dino.op = 1;
+      dino.anim = p < 0.42 ? "run" : p < 0.8 ? "idle" : "walk";
     },
     input(p) {
-      dino.op = 0;
+      /* Walk across while text is being typed */
+      dino.x = lerp(-8, 112, p);
+      dino.scale = 2.8; dino.op = 1; 
+      dino.anim = p < 0.1 ? "idle" : "walk";
       if (typedText) {
         const n = Math.round(ramp(p, 0.14, 0.86) * TYPED.length);
         typedText.textContent = TYPED.slice(0, n);
       }
     },
-    planner() { dino.op = 0; },
+    planner(p) {
+      /* Walk across the planning phase */
+      dino.x = lerp(-8, 112, p);
+      dino.scale = 2.8; dino.op = 1; dino.anim = "run";
+    },
     pipeline(p) {
       dino.x = lerp(-8, 112, p);
       dino.y = 11; dino.scale = 3; dino.op = 1; dino.anim = "run";
@@ -209,8 +217,16 @@
         burst.style.opacity = b * fade;
       }
     },
-    product() { dino.op = 0; },
-    workspace() { dino.op = 0; },
+    product(p) {
+      /* Dino inspects the finished product */
+      dino.x = lerp(-8, 112, p);
+      dino.scale = 3.5; dino.op = 1; dino.anim = "walk";
+    },
+    workspace(p) {
+      /* Dino runs through the command center */
+      dino.x = lerp(-8, 112, p);
+      dino.scale = 3; dino.op = 1; dino.anim = "run";
+    },
     final(p) {
       dino.x = path(p, [[0, -8], [0.4, 50], [1, 50]]);
       dino.scale = 4.6; dino.op = 1;
