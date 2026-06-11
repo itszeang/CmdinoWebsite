@@ -23,17 +23,33 @@
 
   /* ── sprite sheet animator (Arks / Dino Family, 24×24 frames) ── */
   const ANIMS = {
-    idle: { start: 0,  frames: 4, fps: 7 },
-    walk: { start: 4,  frames: 6, fps: 10 },
-    kick: { start: 10, frames: 3, fps: 8 },
-    hurt: { start: 13, frames: 4, fps: 8 },
-    run:  { start: 17, frames: 7, fps: 14 },
+    hatch: { start: 0,  frames: 7, fps: 8, sheet: "assets/hatch.png" },
+    idle:  { start: 0,  frames: 4, fps: 7 },
+    walk:  { start: 4,  frames: 6, fps: 10 },
+    kick:  { start: 10, frames: 3, fps: 8 },
+    hurt:  { start: 13, frames: 4, fps: 8 },
+    run:   { start: 17, frames: 7, fps: 14 },
   };
 
   class Sprite {
-    constructor(el) { this.el = el; this.anim = "idle"; this.clock = 0; }
+    constructor(el, defaultSheet) { 
+      this.el = el; 
+      this.defaultSheet = defaultSheet || "";
+      this.anim = "idle"; 
+      this.clock = 0; 
+    }
     set(name) {
-      if (this.anim !== name && ANIMS[name]) { this.anim = name; this.clock = 0; }
+      if (this.anim !== name && ANIMS[name]) { 
+        this.anim = name; 
+        this.clock = 0; 
+        /* swap sheet if the animation requires a special one */
+        const sheet = ANIMS[name].sheet;
+        if (sheet) {
+          this.el.style.backgroundImage = `url("${sheet}")`;
+        } else if (this.defaultSheet) {
+          this.el.style.backgroundImage = `url("${this.defaultSheet}")`;
+        }
+      }
     }
     tick(dt) {
       const a = ANIMS[this.anim];
@@ -54,9 +70,11 @@
   const dockCount = document.getElementById("dockCount");
   const contextDock = document.getElementById("contextDock");
 
-  const dinoSprite = new Sprite(dinoSpriteEl);
+  /* get default sheet from CSS if possible, or fallback */
+  const defaultDinoSheet = "assets/dino-tard.png";
+  const dinoSprite = new Sprite(dinoSpriteEl, defaultDinoSheet);
   const miniSprites = [...document.querySelectorAll(".mini-dino")].map((el) => {
-    const s = new Sprite(el);
+    const s = new Sprite(el, defaultDinoSheet);
     s.set(el.dataset.anim || "walk");
     return s;
   });
@@ -109,9 +127,15 @@
 
   const choreo = {
     hero(p) {
+      /* Start with hatching animation, then transition to idle/walk */
       dino.x = lerp(68, 112, ramp(p, 0.18, 1));
       dino.scale = 4; dino.op = 1;
-      dino.anim = p < 0.1 ? "idle" : "walk";
+      if (p < 0.12) {
+        dino.anim = "hatch";
+        dino.x = 68; // Stay still while hatching
+      } else {
+        dino.anim = p < 0.2 ? "idle" : "walk";
+      }
     },
     prompt(p) {
       /* Enter scene, look at terminal portal, then walk off */
